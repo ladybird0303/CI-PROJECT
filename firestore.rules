@@ -1,0 +1,24 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Energy readings — anyone can read/write (local network app)
+    match /energy_readings/{document} {
+      allow read, write: if true;
+    }
+    
+    // Relay events log
+    match /relay_events/{document} {
+      allow read, write: if true;
+    }
+    
+    // User settings — single document
+    match /settings/user_config {
+      allow read, write: if true;
+    }
+    
+    // Daily summaries
+    match /daily_summaries/{document} {
+      allow read, write: if true;
+    }
+  }
+}
