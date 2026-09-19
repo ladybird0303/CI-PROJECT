@@ -1,0 +1,544 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1720 1140" width="100%" height="100%" style="background:#0b1120; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+  <defs>
+    <filter id="card-shadow" x="-5%" y="-5%" width="110%" height="115%">
+      <feDropShadow dx="0" dy="6" stdDeviation="8" flood-color="#000000" flood-opacity="0.6"/>
+    </filter>
+    <filter id="glow-load" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="3" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+    <marker id="arrow-red" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#ef4444" />
+    </marker>
+    <marker id="arrow-orange" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#f97316" />
+    </marker>
+    <marker id="arrow-purple" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#a855f7" />
+    </marker>
+    <marker id="arrow-blue" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#38bdf8" />
+    </marker>
+    <marker id="arrow-green" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#10b981" />
+    </marker>
+    <marker id="arrow-yellow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#fbbf24" />
+    </marker>
+    
+    <linearGradient id="grad-header" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#1e293b" />
+      <stop offset="100%" stop-color="#0f172a" />
+    </linearGradient>
+    <linearGradient id="grad-uno" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#0d5c63" />
+      <stop offset="100%" stop-color="#063539" />
+    </linearGradient>
+  </defs>
+
+  <!-- Background Grid -->
+  <pattern id="schem-grid" width="25" height="25" patternUnits="userSpaceOnUse">
+    <path d="M 25 0 L 0 0 0 25" fill="none" stroke="#1e293b" stroke-width="0.6" />
+  </pattern>
+  <rect width="100%" height="100%" fill="url(#schem-grid)" />
+
+  <!-- HEADER -->
+  <g transform="translate(30, 20)" filter="url(#card-shadow)">
+    <rect width="1660" height="75" rx="10" fill="url(#grad-header)" stroke="#334155" stroke-width="1.5" />
+    <text x="30" y="42" fill="#f8fafc" font-size="22" font-weight="bold" letter-spacing="0.5">SMART ENERGY &amp; RELAY CONTROL HARDWARE SCHEMATIC</text>
+    <text x="30" y="62" fill="#94a3b8" font-size="12">Full Interconnect Diagram • Arduino Uno R3, Dual LM2596 Bucks, Optoisolated 4-Ch Relay Board, ACS712-5A, ESP8266, 16x2 I2C LCD &amp; Actuators</text>
+    
+    <!-- Legend Box -->
+    <g transform="translate(1020, 12)">
+      <rect width="620" height="52" rx="6" fill="#070d19" stroke="#1e293b" />
+      <line x1="15" y1="18" x2="35" y2="18" stroke="#e11d48" stroke-width="3.5" />
+      <text x="42" y="22" fill="#cbd5e1" font-size="11">9V Power Bus</text>
+
+      <line x1="150" y1="18" x2="170" y2="18" stroke="#ea580c" stroke-width="3.5" />
+      <text x="178" y="22" fill="#cbd5e1" font-size="11">Buck-1 (+ve Rail)</text>
+
+      <line x1="300" y1="18" x2="320" y2="18" stroke="#a855f7" stroke-width="3.5" />
+      <text x="328" y="22" fill="#cbd5e1" font-size="11">Buck-2 (JD-VCC/Loads)</text>
+
+      <line x1="475" y1="18" x2="495" y2="18" stroke="#64748b" stroke-width="3.5" />
+      <text x="503" y="22" fill="#cbd5e1" font-size="11">GND Common</text>
+
+      <line x1="15" y1="38" x2="35" y2="38" stroke="#0ea5e9" stroke-width="2" stroke-dasharray="3,2" />
+      <text x="42" y="42" fill="#cbd5e1" font-size="11">I2C (SDA/SCL)</text>
+
+      <line x1="150" y1="38" x2="170" y2="38" stroke="#10b981" stroke-width="2" stroke-dasharray="3,2" />
+      <text x="178" y="42" fill="#cbd5e1" font-size="11">UART (TX/RX)</text>
+
+      <line x1="300" y1="38" x2="320" y2="38" stroke="#f59e0b" stroke-width="2" />
+      <text x="328" y="42" fill="#cbd5e1" font-size="11">GPIO Control</text>
+
+      <line x1="475" y1="38" x2="495" y2="38" stroke="#ec4899" stroke-width="3" />
+      <text x="503" y="42" fill="#cbd5e1" font-size="11">Current Sense Bus</text>
+    </g>
+  </g>
+
+  <!-- ==================== POWER BUS RAILS ==================== -->
+  <!-- 9V DC Rail (Top Horizontal) -->
+  <path d="M 140 160 L 680 160" stroke="#e11d48" stroke-width="4" stroke-linecap="round" fill="none" />
+  <rect x="350" y="148" width="140" height="24" rx="4" fill="#e11d48" />
+  <text x="360" y="164" fill="#ffffff" font-size="11" font-weight="bold">9V DC POWER BUS</text>
+
+  <!-- +ve Rail (Buck-1 5V Regulated Rail - Middle Horizontal) -->
+  <path d="M 260 280 L 520 280" stroke="#ea580c" stroke-width="4" stroke-linecap="round" fill="none" />
+  <rect x="350" y="268" width="120" height="24" rx="4" fill="#ea580c" />
+  <text x="362" y="284" fill="#ffffff" font-size="11" font-weight="bold">+ve RAIL (5V Logic)</text>
+
+  <!-- COMMON GND RAIL (Long Horizontal Bottom Rail) -->
+  <path d="M 60 1070 L 1660 1070" stroke="#475569" stroke-width="6" stroke-linecap="round" fill="none" />
+  <rect x="800" y="1056" width="160" height="28" rx="6" fill="#1e293b" stroke="#64748b" stroke-width="2" />
+  <text x="815" y="1075" fill="#f8fafc" font-size="13" font-weight="bold">COMMON GND RAIL</text>
+
+  <!-- ==================== MODULE 1: POWER ADAPTER & BARREL JACK ==================== -->
+  <g transform="translate(40, 130)" filter="url(#card-shadow)">
+    <rect width="140" height="120" rx="8" fill="#1e293b" stroke="#e11d48" stroke-width="2" />
+    <rect width="140" height="26" rx="8" fill="#e11d48" />
+    <text x="16" y="18" fill="#ffffff" font-size="11" font-weight="bold">9V 2A ADAPTER</text>
+    <text x="16" y="46" fill="#94a3b8" font-size="10">2.1mm Female</text>
+    <text x="16" y="60" fill="#94a3b8" font-size="10">Barrel Connector</text>
+    
+    <!-- Barrel + Pin -->
+    <circle cx="140" cy="30" r="5" fill="#e11d48" />
+    <text x="85" y="34" fill="#f8fafc" font-size="11" font-weight="bold">Barrel +</text>
+    
+    <!-- Barrel - Pin -->
+    <circle cx="140" cy="90" r="5" fill="#64748b" />
+    <text x="87" y="94" fill="#94a3b8" font-size="11" font-weight="bold">Barrel -</text>
+  </g>
+
+  <!-- ==================== MODULE 2: BUCK CONVERTER 1 (LOGIC / DISPLAY / ESP) ==================== -->
+  <g transform="translate(220, 190)" filter="url(#card-shadow)">
+    <rect width="150" height="160" rx="8" fill="#0f172a" stroke="#3b82f6" stroke-width="2" />
+    <rect width="150" height="26" rx="8" fill="#1d4ed8" />
+    <text x="16" y="18" fill="#ffffff" font-size="11" font-weight="bold">BUCK CONVERTER 1</text>
+    <text x="30" y="44" fill="#93c5fd" font-size="10">HW-411A LM2596</text>
+    <text x="24" y="58" fill="#60a5fa" font-size="9">(Logic / Display / ESP)</text>
+    
+    <!-- IN Pins -->
+    <circle cx="0" cy="40" r="5" fill="#e11d48" />
+    <text x="10" y="44" fill="#f8fafc" font-size="10">IN + (9V)</text>
+    
+    <circle cx="0" cy="120" r="5" fill="#64748b" />
+    <text x="10" y="124" fill="#94a3b8" font-size="10">IN - (GND)</text>
+
+    <!-- OUT Pins -->
+    <circle cx="150" cy="40" r="5" fill="#ea580c" />
+    <text x="80" y="44" fill="#fed7aa" font-size="10" font-weight="bold">OUT + (5V)</text>
+    
+    <circle cx="150" cy="120" r="5" fill="#64748b" />
+    <text x="80" y="124" fill="#94a3b8" font-size="10">OUT - (GND)</text>
+  </g>
+
+  <!-- ==================== MODULE 3: BUCK CONVERTER 2 (RELAY COILS & LOADS) ==================== -->
+  <g transform="translate(220, 420)" filter="url(#card-shadow)">
+    <rect width="150" height="160" rx="8" fill="#0f172a" stroke="#a855f7" stroke-width="2" />
+    <rect width="150" height="26" rx="8" fill="#7e22ce" />
+    <text x="16" y="18" fill="#ffffff" font-size="11" font-weight="bold">BUCK CONVERTER 2</text>
+    <text x="30" y="44" fill="#e9d5ff" font-size="10">HW-411A LM2596</text>
+    <text x="24" y="58" fill="#d8b4fe" font-size="9">(Relay &amp; Load Power)</text>
+    
+    <!-- IN Pins -->
+    <circle cx="0" cy="40" r="5" fill="#e11d48" />
+    <text x="10" y="44" fill="#f8fafc" font-size="10">IN + (9V)</text>
+    
+    <circle cx="0" cy="120" r="5" fill="#64748b" />
+    <text x="10" y="124" fill="#94a3b8" font-size="10">IN - (GND)</text>
+
+    <!-- OUT Pins -->
+    <circle cx="150" cy="40" r="5" fill="#a855f7" />
+    <text x="80" y="44" fill="#f3e8ff" font-size="10" font-weight="bold">OUT + (5V)</text>
+    
+    <circle cx="150" cy="120" r="5" fill="#8b5cf6" />
+    <text x="65" y="124" fill="#c4b5fd" font-size="9" font-weight="bold">OUT - (Relay GND)</text>
+  </g>
+
+  <!-- ==================== MODULE 4: DECOUPLING CAPACITOR ==================== -->
+  <g transform="translate(480, 230)" filter="url(#card-shadow)">
+    <rect width="80" height="95" rx="6" fill="#1e293b" stroke="#ea580c" stroke-width="1.5" />
+    <text x="8" y="18" fill="#fdba74" font-size="10" font-weight="bold">CAPACITOR</text>
+    <text x="10" y="34" fill="#e2e8f0" font-size="9">100nF 100V</text>
+    <text x="12" y="48" fill="#94a3b8" font-size="8">(0.1uF 2A104)</text>
+    <!-- Cap symbol -->
+    <line x1="28" y1="66" x2="52" y2="66" stroke="#ea580c" stroke-width="2.5" />
+    <line x1="28" y1="74" x2="52" y2="74" stroke="#64748b" stroke-width="2.5" />
+    <circle cx="40" cy="50" r="4" fill="#ea580c" />
+    <circle cx="40" cy="88" r="4" fill="#64748b" />
+  </g>
+
+  <!-- ==================== MODULE 5: ESP-01 WI-FI MODULE ==================== -->
+  <g transform="translate(400, 75)" filter="url(#card-shadow)">
+    <rect width="160" height="135" rx="8" fill="#111827" stroke="#10b981" stroke-width="2" />
+    <rect width="160" height="26" rx="8" fill="#047857" />
+    <text x="14" y="18" fill="#ffffff" font-size="11" font-weight="bold">ESP-01 WI-FI MODULE</text>
+    <text x="24" y="44" fill="#6ee7b7" font-size="9">ESP8266 + Adapter</text>
+    
+    <!-- Pins -->
+    <circle cx="0" cy="60" r="5" fill="#ea580c" />
+    <text x="10" y="64" fill="#fed7aa" font-size="10">VCC (+ve Rail)</text>
+    
+    <circle cx="0" cy="95" r="5" fill="#64748b" />
+    <text x="10" y="99" fill="#94a3b8" font-size="10">GND (GND Rail)</text>
+
+    <circle cx="160" cy="60" r="5" fill="#10b981" />
+    <text x="100" y="64" fill="#a7f3d0" font-size="10" font-weight="bold">TX ➔ D10</text>
+
+    <circle cx="160" cy="95" r="5" fill="#34d399" />
+    <text x="100" y="99" fill="#a7f3d0" font-size="10" font-weight="bold">RX ➔ D11</text>
+  </g>
+
+  <!-- ==================== MODULE 6: 16x2 I2C LCD DISPLAY ==================== -->
+  <g transform="translate(40, 700)" filter="url(#card-shadow)">
+    <rect width="180" height="160" rx="8" fill="#042f2e" stroke="#0d9488" stroke-width="2" />
+    <rect width="180" height="26" rx="8" fill="#0f766e" />
+    <text x="18" y="18" fill="#ffffff" font-size="11" font-weight="bold">16x2 LCD DISPLAY (I2C)</text>
+    <text x="42" y="46" fill="#5eead4" font-size="10">PCF8574 Module (0x27)</text>
+
+    <!-- Pins -->
+    <circle cx="180" cy="60" r="5" fill="#ea580c" />
+    <text x="75" y="64" fill="#fed7aa" font-size="10">VCC (+ve Rail)</text>
+
+    <circle cx="180" cy="88" r="5" fill="#64748b" />
+    <text x="75" y="92" fill="#94a3b8" font-size="10">GND (GND Rail)</text>
+
+    <circle cx="180" cy="116" r="5" fill="#0ea5e9" />
+    <text x="95" y="120" fill="#bae6fd" font-size="10" font-weight="bold">SDA ➔ A4</text>
+
+    <circle cx="180" cy="144" r="5" fill="#06b6d4" />
+    <text x="95" y="148" fill="#cffafe" font-size="10" font-weight="bold">SCL ➔ A5</text>
+  </g>
+
+  <!-- ==================== MODULE 7: ARDUINO UNO R3 MICROCONTROLLER ==================== -->
+  <g transform="translate(650, 130)" filter="url(#card-shadow)">
+    <rect width="330" height="520" rx="12" fill="url(#grad-uno)" stroke="#00979c" stroke-width="2.5" />
+    
+    <!-- Uno Header Banner -->
+    <rect width="330" height="36" rx="12" fill="#00979c" />
+    <text x="85" y="25" fill="#ffffff" font-size="15" font-weight="bold" letter-spacing="1">ARDUINO UNO R3</text>
+    <text x="108" y="56" fill="#a5f3fc" font-size="11">ATmega328P Main Board</text>
+
+    <!-- LEFT PIN BANK: POWER & ANALOG PINS -->
+    <rect x="10" y="75" width="140" height="420" rx="6" fill="#042229" stroke="#08515c" stroke-width="1.5" />
+    <text x="22" y="96" fill="#38bdf8" font-size="11" font-weight="bold">POWER &amp; ANALOG</text>
+
+    <!-- Vin (Pin 1) -->
+    <circle cx="10" cy="125" r="5" fill="#e11d48" />
+    <text x="24" y="129" fill="#fecdd3" font-size="11" font-weight="bold">Vin (9V In)</text>
+
+    <!-- 5V (Pin 2) -->
+    <circle cx="10" cy="165" r="5" fill="#ef4444" />
+    <text x="24" y="169" fill="#fca5a5" font-size="11" font-weight="bold">5V (Output)</text>
+
+    <!-- 3.3V (Pin 3 - Unused) -->
+    <circle cx="10" cy="205" r="4" fill="#475569" />
+    <text x="24" y="209" fill="#94a3b8" font-size="10">3.3V (NC)</text>
+
+    <!-- GND (Pin 4) -->
+    <circle cx="10" cy="245" r="5" fill="#64748b" />
+    <text x="24" y="249" fill="#e2e8f0" font-size="11" font-weight="bold">GND (Uno GND)</text>
+
+    <!-- A0-A2 (Unused) -->
+    <circle cx="10" cy="285" r="4" fill="#475569" />
+    <text x="24" y="289" fill="#94a3b8" font-size="10">A0 - A2 (NC)</text>
+
+    <!-- A3 (Pin Current Sensor OUT) -->
+    <circle cx="10" cy="325" r="5" fill="#f59e0b" />
+    <text x="24" y="329" fill="#fde68a" font-size="11" font-weight="bold">A3 (ACS712 OUT)</text>
+
+    <!-- A4 (SDA) -->
+    <circle cx="10" cy="365" r="5" fill="#0ea5e9" />
+    <text x="24" y="369" fill="#bae6fd" font-size="11" font-weight="bold">A4 (I2C SDA)</text>
+
+    <!-- A5 (SCL) -->
+    <circle cx="10" cy="405" r="5" fill="#06b6d4" />
+    <text x="24" y="409" fill="#cffafe" font-size="11" font-weight="bold">A5 (I2C SCL)</text>
+
+
+    <!-- RIGHT PIN BANK: DIGITAL I/O -->
+    <rect x="180" y="75" width="140" height="420" rx="6" fill="#042229" stroke="#08515c" stroke-width="1.5" />
+    <text x="205" y="96" fill="#38bdf8" font-size="11" font-weight="bold">DIGITAL I/O</text>
+
+    <!-- D7 (Relay IN1) -->
+    <circle cx="320" cy="125" r="5" fill="#f59e0b" />
+    <text x="205" y="129" fill="#fde68a" font-size="11" font-weight="bold">D7 (Relay IN1)</text>
+
+    <!-- D8 (Buzzer +) -->
+    <circle cx="320" cy="165" r="5" fill="#f59e0b" />
+    <text x="212" y="169" fill="#fde68a" font-size="11" font-weight="bold">D8 (Buzzer +)</text>
+
+    <!-- D9 (Relay IN2) -->
+    <circle cx="320" cy="205" r="5" fill="#f59e0b" />
+    <text x="205" y="209" fill="#fde68a" font-size="11" font-weight="bold">D9 (Relay IN2)</text>
+
+    <!-- D10 (ESP-01 TX) -->
+    <circle cx="320" cy="245" r="5" fill="#10b981" />
+    <text x="198" y="249" fill="#a7f3d0" font-size="11" font-weight="bold">D10 (ESP-01 TX)</text>
+
+    <!-- D11 (ESP-01 RX) -->
+    <circle cx="320" cy="285" r="5" fill="#34d399" />
+    <text x="198" y="289" fill="#a7f3d0" font-size="11" font-weight="bold">D11 (ESP-01 RX)</text>
+
+    <!-- D12 (Relay IN3) -->
+    <circle cx="320" cy="325" r="5" fill="#f59e0b" />
+    <text x="205" y="329" fill="#fde68a" font-size="11" font-weight="bold">D12 (Relay IN3)</text>
+
+    <!-- D13 / Unused -->
+    <circle cx="320" cy="365" r="4" fill="#475569" />
+    <text x="235" y="369" fill="#94a3b8" font-size="10">D13 (NC)</text>
+
+    <!-- GND (Digital GND) -->
+    <circle cx="320" cy="405" r="4" fill="#475569" />
+    <text x="230" y="409" fill="#94a3b8" font-size="10">GND (NC)</text>
+  </g>
+
+  <!-- ==================== MODULE 8: ACTIVE BUZZER 5V ==================== -->
+  <g transform="translate(720, 720)" filter="url(#card-shadow)">
+    <rect width="140" height="95" rx="8" fill="#1e293b" stroke="#f59e0b" stroke-width="2" />
+    <rect width="140" height="24" rx="8" fill="#d97706" />
+    <text x="20" y="17" fill="#ffffff" font-size="11" font-weight="bold">ACTIVE BUZZER</text>
+    <text x="38" y="42" fill="#fcd34d" font-size="10">5V DC Buzzer</text>
+
+    <!-- Buzzer + -->
+    <circle cx="0" cy="56" r="5" fill="#f59e0b" />
+    <text x="14" y="60" fill="#fde68a" font-size="10" font-weight="bold">Buzzer + (D8)</text>
+
+    <!-- Buzzer - -->
+    <circle cx="0" cy="80" r="5" fill="#64748b" />
+    <text x="14" y="84" fill="#94a3b8" font-size="10">Buzzer - (GND)</text>
+  </g>
+
+  <!-- ==================== MODULE 9: ACS712-5A CURRENT SENSOR ==================== -->
+  <g transform="translate(440, 660)" filter="url(#card-shadow)">
+    <rect width="200" height="200" rx="8" fill="#022c22" stroke="#10b981" stroke-width="2" />
+    <rect width="200" height="26" rx="8" fill="#059669" />
+    <text x="18" y="18" fill="#ffffff" font-size="11" font-weight="bold">CURRENT SENSOR (ACS712)</text>
+    <text x="48" y="46" fill="#a7f3d0" font-size="10">Range: ±5A Hall Effect</text>
+
+    <!-- Logic Pins (Top / Side) -->
+    <circle cx="200" cy="65" r="5" fill="#ef4444" />
+    <text x="110" y="69" fill="#fca5a5" font-size="10">VCC (Uno 5V)</text>
+
+    <circle cx="200" cy="95" r="5" fill="#64748b" />
+    <text x="110" y="99" fill="#94a3b8" font-size="10">GND (GND Rail)</text>
+
+    <circle cx="200" cy="125" r="5" fill="#f59e0b" />
+    <text x="85" y="129" fill="#fde68a" font-size="10" font-weight="bold">OUT ➔ Uno A3</text>
+
+    <!-- High Current Sensing Terminals (Bottom) -->
+    <rect x="15" y="150" width="170" height="38" rx="4" fill="#064e3b" stroke="#34d399" stroke-width="1.5" />
+    <circle cx="35" cy="169" r="6" fill="#a855f7" />
+    <text x="46" y="173" fill="#f3e8ff" font-size="10" font-weight="bold">Term 1 (Buck-2 +)</text>
+
+    <circle cx="165" cy="169" r="6" fill="#ec4899" />
+    <text x="112" y="173" fill="#fbcfe8" font-size="10" font-weight="bold">Term 2 ➔</text>
+  </g>
+
+  <!-- ==================== MODULE 10: 4-CHANNEL RELAY BOARD ==================== -->
+  <g transform="translate(1080, 110)" filter="url(#card-shadow)">
+    <rect width="260" height="560" rx="10" fill="#0f172a" stroke="#38bdf8" stroke-width="2" />
+    <rect width="260" height="32" rx="10" fill="#0284c7" />
+    <text x="36" y="22" fill="#ffffff" font-size="13" font-weight="bold">4-CHANNEL 5V RELAY BOARD</text>
+
+    <!-- TOP ISOLATION JUMPER HEADER ("Relay Side Header") -->
+    <rect x="12" y="46" width="236" height="62" rx="6" fill="#1e1b4b" stroke="#a855f7" stroke-width="1.5" />
+    <text x="20" y="64" fill="#c084fc" font-size="10" font-weight="bold">JUMPER HEADER (UNCAPPED / ISOLATED)</text>
+    
+    <circle cx="30" cy="88" r="5" fill="#a855f7" />
+    <text x="42" y="92" fill="#f3e8ff" font-size="11" font-weight="bold">JD-VCC ➔ Buck-2 OUT +</text>
+
+    <circle cx="180" cy="88" r="4" fill="#64748b" />
+    <text x="190" y="92" fill="#94a3b8" font-size="9">(VCC NC)</text>
+
+    <!-- SIGNAL INPUT HEADER ("Relay Front Header") -->
+    <rect x="12" y="120" width="236" height="160" rx="6" fill="#071a2e" stroke="#38bdf8" stroke-width="1.5" />
+    <text x="20" y="138" fill="#38bdf8" font-size="10" font-weight="bold">SIGNAL HEADER (Optocoupler Inputs)</text>
+
+    <circle cx="30" cy="160" r="5" fill="#ef4444" />
+    <text x="45" y="164" fill="#fca5a5" font-size="10">VCC ➔ Uno 5V (Opto Anode)</text>
+
+    <circle cx="30" cy="188" r="5" fill="#8b5cf6" />
+    <text x="45" y="192" fill="#c4b5fd" font-size="10">GND ➔ Buck-2 OUT -</text>
+
+    <circle cx="30" cy="214" r="5" fill="#f59e0b" />
+    <text x="45" y="218" fill="#fde68a" font-size="10">IN1 ➔ Uno D7 (CH1 Control)</text>
+
+    <circle cx="30" cy="238" r="5" fill="#f59e0b" />
+    <text x="45" y="242" fill="#fde68a" font-size="10">IN2 ➔ Uno D9 (CH2 Control)</text>
+
+    <circle cx="30" cy="262" r="5" fill="#f59e0b" />
+    <text x="45" y="266" fill="#fde68a" font-size="10">IN3 ➔ Uno D12 (CH3 Control)</text>
+
+    <!-- RELAY OUTPUT TERMINAL BLOCKS -->
+    <!-- Channel 1: Traffic Light LED -->
+    <rect x="12" y="295" width="236" height="75" rx="6" fill="#1e293b" stroke="#10b981" stroke-width="1.5" />
+    <text x="20" y="313" fill="#34d399" font-size="10" font-weight="bold">RELAY CH1 (Traffic Light LED)</text>
+    <circle cx="30" cy="336" r="5" fill="#ec4899" />
+    <text x="42" y="340" fill="#fbcfe8" font-size="10">COM (Current Sense Bus)</text>
+    <circle cx="248" cy="336" r="5" fill="#10b981" />
+    <text x="155" y="340" fill="#a7f3d0" font-size="10" font-weight="bold">NO ➔ LED +</text>
+    <text x="42" y="358" fill="#64748b" font-size="9">NC: Not Connected</text>
+
+    <!-- Channel 2: Cooling Fan -->
+    <rect x="12" y="380" width="236" height="75" rx="6" fill="#1e293b" stroke="#38bdf8" stroke-width="1.5" />
+    <text x="20" y="398" fill="#38bdf8" font-size="10" font-weight="bold">RELAY CH2 (Cooling Fan)</text>
+    <circle cx="30" cy="421" r="5" fill="#ec4899" />
+    <text x="42" y="425" fill="#fbcfe8" font-size="10">COM (Current Sense Bus)</text>
+    <circle cx="248" cy="421" r="5" fill="#38bdf8" />
+    <text x="155" y="425" fill="#bae6fd" font-size="10" font-weight="bold">NO ➔ Fan +</text>
+    <text x="42" y="443" fill="#64748b" font-size="9">NC: Not Connected</text>
+
+    <!-- Channel 3: DC Motor -->
+    <rect x="12" y="465" width="236" height="75" rx="6" fill="#1e293b" stroke="#f59e0b" stroke-width="1.5" />
+    <text x="20" y="483" fill="#fbbf24" font-size="10" font-weight="bold">RELAY CH3 (DC Motor)</text>
+    <circle cx="30" cy="506" r="5" fill="#ec4899" />
+    <text x="42" y="510" fill="#fbcfe8" font-size="10">COM (Current Sense Bus)</text>
+    <circle cx="248" cy="506" r="5" fill="#f59e0b" />
+    <text x="145" y="510" fill="#fde68a" font-size="10" font-weight="bold">NO ➔ Motor +</text>
+    <text x="42" y="528" fill="#64748b" font-size="9">NC: Not Connected</text>
+  </g>
+
+  <!-- ==================== ACTUATOR / LOAD DEVICES (RIGHT COLUMN) ==================== -->
+  <!-- LOAD 1: 5V LED Traffic Light Module -->
+  <g transform="translate(1440, 390)" filter="url(#card-shadow)">
+    <rect width="200" height="105" rx="8" fill="#1e293b" stroke="#10b981" stroke-width="2" />
+    <rect width="200" height="24" rx="8" fill="#047857" />
+    <text x="20" y="17" fill="#ffffff" font-size="11" font-weight="bold">5V TRAFFIC LIGHT LED</text>
+    
+    <!-- LED Indicators -->
+    <circle cx="40" cy="50" r="9" fill="#ef4444" stroke="#f87171" stroke-width="1.5" />
+    <circle cx="66" cy="50" r="9" fill="#f59e0b" stroke="#fcd34d" stroke-width="1.5" />
+    <circle cx="92" cy="50" r="9" fill="#10b981" stroke="#34d399" stroke-width="1.5" />
+
+    <circle cx="0" cy="50" r="5" fill="#10b981" />
+    <text x="110" y="54" fill="#a7f3d0" font-size="10" font-weight="bold">LED + (CH1 NO)</text>
+
+    <circle cx="0" cy="82" r="5" fill="#64748b" />
+    <text x="18" y="86" fill="#94a3b8" font-size="10">LED - ➔ GND Rail</text>
+  </g>
+
+  <!-- LOAD 2: 5V Cooling Fan -->
+  <g transform="translate(1440, 520)" filter="url(#card-shadow)">
+    <rect width="200" height="105" rx="8" fill="#1e293b" stroke="#0284c7" stroke-width="2" />
+    <rect width="200" height="24" rx="8" fill="#0369a1" />
+    <text x="20" y="17" fill="#ffffff" font-size="11" font-weight="bold">5V COOLING FAN</text>
+    <text x="28" y="50" fill="#7dd3fc" font-size="10">40 x 40 x 7 mm</text>
+
+    <circle cx="0" cy="50" r="5" fill="#0284c7" />
+    <text x="105" y="54" fill="#bae6fd" font-size="10" font-weight="bold">Fan + (CH2 NO)</text>
+
+    <circle cx="0" cy="82" r="5" fill="#64748b" />
+    <text x="18" y="86" fill="#94a3b8" font-size="10">Fan - ➔ GND Rail</text>
+  </g>
+
+  <!-- LOAD 3: 3V-9V DC Motor -->
+  <g transform="translate(1440, 650)" filter="url(#card-shadow)">
+    <rect width="200" height="105" rx="8" fill="#1e293b" stroke="#d97706" stroke-width="2" />
+    <rect width="200" height="24" rx="8" fill="#b45309" />
+    <text x="20" y="17" fill="#ffffff" font-size="11" font-weight="bold">130 DC MOTOR</text>
+    <text x="28" y="50" fill="#fde68a" font-size="10">3V-9V Short Shaft</text>
+
+    <circle cx="0" cy="50" r="5" fill="#d97706" />
+    <text x="95" y="54" fill="#fde68a" font-size="10" font-weight="bold">Motor + (CH3 NO)</text>
+
+    <circle cx="0" cy="82" r="5" fill="#64748b" />
+    <text x="18" y="86" fill="#94a3b8" font-size="10">Motor - ➔ GND Rail</text>
+  </g>
+
+  <!-- ==================== WIRING NET ROUTING ==================== -->
+  <!-- 1. 9V Power Distribution -->
+  <path d="M 180 160 L 220 160" stroke="#e11d48" stroke-width="3" fill="none" />
+  <path d="M 200 160 L 200 230 L 220 230" stroke="#e11d48" stroke-width="2.5" fill="none" marker-end="url(#arrow-red)" />
+  <circle cx="200" cy="160" r="4" fill="#e11d48" />
+  <path d="M 190 160 L 190 460 L 220 460" stroke="#e11d48" stroke-width="2.5" fill="none" marker-end="url(#arrow-red)" />
+  <circle cx="190" cy="160" r="4" fill="#e11d48" />
+  <path d="M 660 255 L 610 255 L 610 160 L 650 160" stroke="#e11d48" stroke-width="2.5" fill="none" marker-end="url(#arrow-red)" />
+  <circle cx="610" cy="160" r="4" fill="#e11d48" />
+
+  <!-- 2. Buck-1 OUT+ to +ve Rail & Peripherals -->
+  <path d="M 370 230 L 390 230 L 390 280 L 350 280" stroke="#ea580c" stroke-width="2.5" fill="none" />
+  <path d="M 390 280 L 390 135 L 400 135" stroke="#ea580c" stroke-width="2" fill="none" marker-end="url(#arrow-orange)" />
+  <circle cx="390" cy="280" r="4" fill="#ea580c" />
+  <path d="M 460 280 L 480 280" stroke="#ea580c" stroke-width="2" fill="none" />
+  <circle cx="460" cy="280" r="4" fill="#ea580c" />
+  <path d="M 290 280 L 290 760 L 220 760" stroke="#ea580c" stroke-width="2" fill="none" marker-end="url(#arrow-orange)" />
+  <circle cx="290" cy="280" r="4" fill="#ea580c" />
+
+  <!-- 3. Buck-2 OUT+ & JD-VCC & ACS712 Term 1 -->
+  <path d="M 370 460 L 380 460 L 380 40 L 1100 40 L 1100 198 L 1110 198" stroke="#a855f7" stroke-width="2.5" fill="none" marker-end="url(#arrow-purple)" />
+  <circle cx="380" cy="460" r="4" fill="#a855f7" />
+  <path d="M 380 460 L 380 829 L 475 829" stroke="#a855f7" stroke-width="2.5" fill="none" marker-end="url(#arrow-purple)" />
+  
+  <!-- Buck-2 OUT- to Relay Front GND -->
+  <path d="M 370 540 L 395 540 L 395 60 L 1070 60 L 1070 298 L 1110 298" stroke="#8b5cf6" stroke-width="2" stroke-dasharray="4,2" fill="none" marker-end="url(#arrow-purple)" />
+
+  <!-- 4. ACS712 Term 2 to Relay COM Bus (CH1, CH2, CH3) -->
+  <path d="M 605 829 L 1040 829 L 1040 446 L 1110 446" stroke="#ec4899" stroke-width="3.5" fill="none" filter="url(#glow-load)" />
+  <path d="M 1040 531 L 1110 531" stroke="#ec4899" stroke-width="3" fill="none" />
+  <circle cx="1040" cy="531" r="4" fill="#ec4899" />
+  <path d="M 1040 616 L 1110 616" stroke="#ec4899" stroke-width="3" fill="none" />
+  <circle cx="1040" cy="616" r="4" fill="#ec4899" />
+
+  <!-- 5. Relay NO outputs to Loads -->
+  <path d="M 1328 446 L 1380 446 L 1380 440 L 1440 440" stroke="#10b981" stroke-width="2.5" fill="none" marker-end="url(#arrow-green)" />
+  <path d="M 1328 531 L 1380 531 L 1380 570 L 1440 570" stroke="#38bdf8" stroke-width="2.5" fill="none" marker-end="url(#arrow-blue)" />
+  <path d="M 1328 616 L 1380 616 L 1380 700 L 1440 700" stroke="#f59e0b" stroke-width="2.5" fill="none" marker-end="url(#arrow-yellow)" />
+
+  <!-- 6. Uno 5V to ACS712 VCC & Relay Front VCC -->
+  <path d="M 660 295 L 630 295 L 630 725 L 640 725" stroke="#ef4444" stroke-width="2" fill="none" marker-end="url(#arrow-red)" />
+  <circle cx="630" cy="295" r="4" fill="#ef4444" />
+  <path d="M 630 295 L 630 100 L 1050 100 L 1050 270 L 1110 270" stroke="#ef4444" stroke-width="2" fill="none" marker-end="url(#arrow-red)" />
+
+  <!-- 7. Digital Control Signals -->
+  <!-- D7 to Relay IN1 -->
+  <path d="M 970 255 L 1020 255 L 1020 324 L 1110 324" stroke="#f59e0b" stroke-width="2" fill="none" marker-end="url(#arrow-yellow)" />
+  <!-- D8 to Buzzer + -->
+  <path d="M 970 295 L 1000 295 L 1000 776 L 720 776" stroke="#f59e0b" stroke-width="2" fill="none" marker-end="url(#arrow-yellow)" />
+  <!-- D9 to Relay IN2 -->
+  <path d="M 970 335 L 1010 335 L 1010 348 L 1110 348" stroke="#f59e0b" stroke-width="2" fill="none" marker-end="url(#arrow-yellow)" />
+  <!-- D12 to Relay IN3 -->
+  <path d="M 970 455 L 1020 455 L 1020 372 L 1110 372" stroke="#f59e0b" stroke-width="2" fill="none" marker-end="url(#arrow-yellow)" />
+
+  <!-- 8. UART & I2C & Analog Signals -->
+  <!-- ESP-01 TX to D10 -->
+  <path d="M 560 135 L 590 135 L 590 220 L 990 220 L 990 375 L 970 375" stroke="#10b981" stroke-width="2" stroke-dasharray="4,2" fill="none" marker-end="url(#arrow-green)" />
+  <!-- ESP-01 RX to D11 -->
+  <path d="M 560 170 L 600 170 L 600 205 L 1000 205 L 1000 415 L 970 415" stroke="#34d399" stroke-width="2" stroke-dasharray="4,2" fill="none" marker-end="url(#arrow-green)" />
+  <!-- Display SDA to A4 -->
+  <path d="M 220 816 L 250 816 L 250 900 L 620 900 L 620 495 L 660 495" stroke="#0ea5e9" stroke-width="2" stroke-dasharray="4,2" fill="none" marker-end="url(#arrow-blue)" />
+  <!-- Display SCL to A5 -->
+  <path d="M 220 844 L 240 844 L 240 920 L 610 920 L 610 535 L 660 535" stroke="#06b6d4" stroke-width="2" stroke-dasharray="4,2" fill="none" marker-end="url(#arrow-blue)" />
+  <!-- ACS712 OUT to A3 -->
+  <path d="M 640 785 L 670 785 L 670 455 L 660 455" stroke="#f59e0b" stroke-width="2" fill="none" marker-end="url(#arrow-yellow)" />
+
+  <!-- 9. Ground Connections to GND Rail -->
+  <path d="M 180 220 L 190 220 L 190 1070" stroke="#64748b" stroke-width="2" fill="none" />
+  <circle cx="190" cy="1070" r="4" fill="#64748b" />
+  <path d="M 220 310 L 205 310 L 205 1070" stroke="#64748b" stroke-width="2" fill="none" />
+  <circle cx="205" cy="1070" r="4" fill="#64748b" />
+  <path d="M 370 310 L 375 310 L 375 1070" stroke="#64748b" stroke-width="2" fill="none" />
+  <circle cx="375" cy="1070" r="4" fill="#64748b" />
+  <path d="M 220 540 L 200 540 L 200 1070" stroke="#64748b" stroke-width="2" fill="none" />
+  <circle cx="200" cy="1070" r="4" fill="#64748b" />
+  <path d="M 400 170 L 385 170 L 385 1070" stroke="#64748b" stroke-width="2" fill="none" />
+  <circle cx="385" cy="1070" r="4" fill="#64748b" />
+  <path d="M 520 325 L 520 1070" stroke="#64748b" stroke-width="2" fill="none" />
+  <circle cx="520" cy="1070" r="4" fill="#64748b" />
+  <path d="M 660 375 L 620 375 L 620 1070" stroke="#64748b" stroke-width="2" fill="none" />
+  <circle cx="620" cy="1070" r="4" fill="#64748b" />
+  <path d="M 640 755 L 650 755 L 650 1070" stroke="#64748b" stroke-width="2" fill="none" />
+  <circle cx="650" cy="1070" r="4" fill="#64748b" />
+  <path d="M 220 788 L 260 788 L 260 1070" stroke="#64748b" stroke-width="2" fill="none" />
+  <circle cx="260" cy="1070" r="4" fill="#64748b" />
+  <path d="M 720 800 L 705 800 L 705 1070" stroke="#64748b" stroke-width="2" fill="none" />
+  <circle cx="705" cy="1070" r="4" fill="#64748b" />
+  <path d="M 1440 472 L 1415 472 L 1415 1070" stroke="#64748b" stroke-width="2" fill="none" />
+  <circle cx="1415" cy="1070" r="4" fill="#64748b" />
+  <path d="M 1440 602 L 1425 602 L 1425 1070" stroke="#64748b" stroke-width="2" fill="none" />
+  <circle cx="1425" cy="1070" r="4" fill="#64748b" />
+  <path d="M 1440 732 L 1435 732 L 1435 1070" stroke="#64748b" stroke-width="2" fill="none" />
+  <circle cx="1435" cy="1070" r="4" fill="#64748b" />
+
+</svg>
