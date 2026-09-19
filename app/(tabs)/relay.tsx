@@ -1,9 +1,9 @@
 import React, { useState, useCallback } from 'react';
-import { ScrollView, StyleSheet, View } from 'react-native';
-import { Button, Card, Snackbar, Text, TextInput } from 'react-native-paper';
+import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Button, Card, Snackbar, Switch, Text, TextInput } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import Slider from '@react-native-community/slider';
-import { useEsp32 } from '../../hooks/useEsp32';
+import { useDevice } from '../../hooks/useDevice';
 import { palette } from '../../constants/colors';
 
 const DEFAULT_RELAY_NAMES = ['Load 1', 'Load 2', 'Load 3'];
@@ -19,17 +19,36 @@ export default function RelayControlScreen() {
     threshold,
     thresholdExceeded,
     buzzerAlert,
+    deviceRebooted,
     toggleRelay,
     updateThreshold,
     acknowledgeBreach,
-  } = useEsp32({ pollIntervalMs: 1500 });
+  } = useDevice({ pollIntervalMs: 3000 });
 
   const [snackbarMessage, setSnackbarMessage] = useState('');
   const [snackbarVisible, setSnackbarVisible] = useState(false);
   const [sliderValue, setSliderValue] = useState(threshold);
+  // Serializes relay commands: the device bridge handles exactly one request
+  // at a time (~1-2s per 32/64-sample sensor read), so overlapping POSTs from
+  // fast taps or the master toggle would queue, time out, or be dropped.
+  const [busyChannel, setBusyChannel] = useState<number | null>(null);
   const [relayNames, setRelayNames] = useState(DEFAULT_RELAY_NAMES);
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [editText, setEditText] = useState('');
+
+  // Belt-and-suspenders: hook guards relays on write, but a stale bundle or a
+  // future partial body could still hand us undefined — never crash on it.
+  const safeRelays: [boolean, boolean, boolean] = Array.isArray(relays)
+    ? [!!relays[0], !!relays[1], !!relays[2]]
+    : [false, false, false];
+  const safeNum = (v: unknown, fb = 0) => {
+    const n = Number(v);
+    return Number.isFinite(n) ? n : fb;
+  };
+  const safeVoltage = safeNum(voltage);
+  const safeCurrent = safeNum(current);
+  const safePower = safeNum(power);
+  const safeThreshold = safeNum(threshold, 10);
 
   const showSnackbar = useCallback((message: string) => {
     setSnackbarMessage(message);
@@ -38,7 +57,7 @@ export default function RelayControlScreen() {
 
   const handleToggle = async (channel: number) => {
     if (!isConnected) {
-      showSnackbar('ESP32 not connected — check WiFi');
+      showSnackbar('Device not connected — check the bridge');
       return;
     }
     if (thresholdExceeded) {
@@ -46,26 +65,40 @@ export default function RelayControlScreen() {
       return;
     }
     const label = relayNames[channel - 1];
-    const newState = !relays[channel - 1];
+    const newState = !safeRelays[channel - 1];
     await toggleRelay(channel);
     showSnackbar(`${label} ${newState ? 'ON' : 'OFF'}`);
   };
 
   const handleMasterToggle = async (turnOn: boolean) => {
     if (!isConnected) {
-      showSnackbar('ESP32 not connected — check WiFi');
+      showSnackbar('Device not connected — check the bridge');
       return;
     }
     if (thresholdExceeded && turnOn) {
       showSnackbar('Threshold breach! Acknowledge first to enable relays.');
       return;
     }
-    for (let ch = 1; ch <= 3; ch++) {
-      if (relays[ch - 1] !== turnOn) {
-        await toggleRelay(ch);
+    if (busyChannel !== null) return; // one command at a time (the link is serial)
+    // Sequential: each toggleRelay() already waits out the device's sensor cycle,
+    // so commands never overlap and queue on the single-threaded bridge.
+    setBusyChannel(0);
+    const failures: string[] = [];
+    try {
+      for (let ch = 1; ch <= 3; ch++) {
+        if (safeRelays[ch - 1] !== turnOn) {
+          const result = await toggleRelay(ch);
+          if (!result.latched) failures.push(`${relayNames[ch - 1]}: ${result.note}`);
+        }
       }
+    } finally {
+      setBusyChannel(null);
     }
-    showSnackbar(turnOn ? 'All relays turned ON' : 'All relays turned OFF');
+    if (failures.length === 0) {
+      showSnackbar(turnOn ? 'All relays turned ON' : 'All relays turned OFF');
+    } else {
+      showSnackbar(failures[0]);
+    }
   };
 
   const handleSliderChange = (value: number) => {
@@ -75,15 +108,48 @@ export default function RelayControlScreen() {
   const handleSliderComplete = async (value: number) => {
     const rounded = Math.round(value * 2) / 2;
     setSliderValue(rounded);
-    if (isConnected) {
-      await updateThreshold(rounded);
-      showSnackbar(`Power threshold set to ${rounded.toFixed(1)}W`);
-    }
+    if (!isConnected) return;
+    const ok = await updateThreshold(rounded);
+    showSnackbar(ok
+      ? `Power threshold set to ${rounded.toFixed(1)}W`
+      : 'Threshold NOT applied — the meter did not accept it.');
   };
 
   const handleAcknowledge = async () => {
-    await acknowledgeBreach();
-    showSnackbar('Threshold acknowledged. Relays re-enabled.');
+    const ok = await acknowledgeBreach();
+    showSnackbar(ok
+      ? 'Threshold acknowledged. Relays re-enabled.'
+      : 'Acknowledge NOT delivered — the meter still holds the latch.');
+  };
+
+  // Relay controls are level toggles (NOT momentary push buttons).
+  // One tap flips the level and stays — identical to the latched HW buttons.
+  // toggleRelay() already commands, waits out one sensor cycle, re-reads
+  // ground truth, and returns WHY a latch failed (network / threshold /
+  // reboot / loose-button re-toggle). Show that verdict verbatim.
+  const handleSwitchToggle = async (channel: number) => {
+    if (!isConnected) {
+      showSnackbar('Device not connected — check the bridge');
+      return;
+    }
+    const currentlyOn = safeRelays[channel - 1];
+    if (thresholdExceeded && !currentlyOn) {
+      showSnackbar('Threshold breach! Acknowledge first to control relays.');
+      return;
+    }
+    if (busyChannel !== null) return; // one command at a time (ESP is serial)
+    const label = relayNames[channel - 1];
+    setBusyChannel(channel);
+    try {
+      const result = await toggleRelay(channel);
+      if (result.latched) {
+        showSnackbar(`${label} toggled ${!currentlyOn ? 'ON' : 'OFF'}`);
+      } else {
+        showSnackbar(`${label} did NOT stay on — ${result.note}`);
+      }
+    } finally {
+      setBusyChannel(null);
+    }
   };
 
   const handleStartRename = (index: number) => {
@@ -108,7 +174,7 @@ export default function RelayControlScreen() {
     setEditText('');
   };
 
-  const allOn = relays[0] && relays[1] && relays[2];
+  const allOn = safeRelays[0] && safeRelays[1] && safeRelays[2];
 
   return (
     <View style={styles.container}>
@@ -122,8 +188,8 @@ export default function RelayControlScreen() {
           />
           <Text style={styles.connectionText}>
             {isConnected
-              ? `ESP32 Connected — ${voltage.toFixed(1)}V, ${power.toFixed(1)}W`
-              : 'ESP32 Disconnected — Connect to "SmartEnergyMeter" WiFi'}
+              ? `Device Connected — ${voltage.toFixed(1)}V, ${power.toFixed(1)}W`
+              : 'Device Disconnected — check the bridge connection'}
           </Text>
         </View>
 
@@ -139,8 +205,19 @@ export default function RelayControlScreen() {
             <Button mode="contained" onPress={handleAcknowledge} style={styles.acknowledgeBtn} buttonColor="#FFFFFF" textColor="#D32F2F" icon="check">ACKNOWLEDGE & RESET</Button>
           </Card>
         )}
+        {deviceRebooted && !thresholdExceeded && (
+          <Card style={styles.rebootCard}>
+            <View style={styles.alertHeader}>
+              <MaterialCommunityIcons name="restart-alert" size={28} color="#5D4037" />
+              <View style={styles.alertTextContainer}>
+                <Text style={styles.rebootTitle}>DEVICE REBOOTED DURING LAST COMMAND</Text>
+                <Text style={styles.rebootDetail}>Coil inrush browned the device out — it rebooted and all relays released. Move relay JD-VCC wiring to the other buck rail, then try again.</Text>
+              </View>
+            </View>
+          </Card>
+        )}
         <Text variant="headlineSmall" style={styles.title}>Relay Control</Text>
-        <Text style={styles.subtitle}>{isConnected ? 'Hardware-connected relay management via ESP32.' : 'Waiting for ESP32 connection...'}</Text>
+        <Text style={styles.subtitle}>{isConnected ? 'Hardware-connected relay management.' : 'Waiting for device connection...'}</Text>
         <Card style={styles.card}>
           <View style={styles.cardSectionTitle}>
             <MaterialCommunityIcons name="speedometer" size={18} color={palette.primary} />
@@ -164,14 +241,14 @@ export default function RelayControlScreen() {
               <Text style={styles.masterSubLabel}>{allOn ? 'All relays ON' : 'Some or all relays OFF'}</Text>
             </View>
             <View style={styles.masterButtons}>
-              <Button mode="outlined" onPress={() => handleMasterToggle(true)} disabled={!isConnected || (thresholdExceeded && !allOn)} compact>ALL ON</Button>
-              <Button mode="contained" onPress={() => handleMasterToggle(false)} disabled={!isConnected} buttonColor="#D32F2F" compact>ALL OFF</Button>
+              <Button mode="outlined" onPress={() => handleMasterToggle(true)} disabled={!isConnected || busyChannel !== null || (thresholdExceeded && !allOn)} compact>ALL ON</Button>
+              <Button mode="contained" onPress={() => handleMasterToggle(false)} disabled={!isConnected || busyChannel !== null} buttonColor="#D32F2F" compact>ALL OFF</Button>
             </View>
           </View>
           <View style={styles.divider} />
           {relayNames.map((name, index) => {
             const ch = index + 1;
-            const isOn = relays[index];
+            const isOn = safeRelays[index];
             const isEditing = editingIndex === index;
             return (
               <View key={ch} style={styles.relayRow}>
@@ -191,7 +268,10 @@ export default function RelayControlScreen() {
                         contentStyle={styles.renameInputContent}
                       />
                     ) : (
-                      <Text style={styles.relayLabel} onLongPress={() => handleStartRename(index)}>{name}</Text>
+                      <Pressable onLongPress={() => handleStartRename(index)} delayLongPress={400}>
+                        <Text style={styles.relayLabel}>{name}</Text>
+                        <Text style={styles.renameHint}>Long-press to rename</Text>
+                      </Pressable>
                     )}
                   </View>
                 </View>
@@ -202,7 +282,15 @@ export default function RelayControlScreen() {
                       <Button mode="text" onPress={handleCancelRename} compact textColor={palette.muted}>Cancel</Button>
                     </View>
                   ) : (
-                    <Button mode={isOn ? 'contained' : 'outlined'} onPress={() => handleToggle(ch)} disabled={!isConnected || (thresholdExceeded && !isOn)} buttonColor={isOn ? palette.primary : undefined} compact>{isOn ? 'ON' : 'OFF'}</Button>
+                    <View style={styles.toggleRow}>
+                      <Text style={[styles.toggleState, isOn ? styles.toggleOn : styles.toggleOff]}>{busyChannel === ch ? '...' : isOn ? 'ON' : 'OFF'}</Text>
+                      <Switch
+                        value={isOn}
+                        onValueChange={() => handleSwitchToggle(ch)}
+                        disabled={!isConnected || busyChannel !== null || (thresholdExceeded && !isOn)}
+                        color={palette.primary}
+                      />
+                    </View>
                   )}
                 </View>
               </View>
@@ -252,6 +340,9 @@ const styles = StyleSheet.create({
   alertTitle: { color: '#FFFFFF', fontSize: 16, fontWeight: '800' },
   alertDetail: { color: '#FFCDD2', fontSize: 12, marginTop: 4, lineHeight: 16 },
   acknowledgeBtn: { borderRadius: 8 },
+  rebootCard: { borderRadius: 12, padding: 16, backgroundColor: '#FFF3E0', marginBottom: 16, elevation: 2, borderWidth: 1, borderColor: '#FFB74D' },
+  rebootTitle: { color: '#E65100', fontSize: 14, fontWeight: '800' },
+  rebootDetail: { color: '#6D4C41', fontSize: 12, marginTop: 4, lineHeight: 16 },
   title: { color: palette.text, fontWeight: '700' },
   subtitle: { color: palette.muted, marginTop: 4, marginBottom: 16 },
   card: { borderRadius: 24, padding: 18, backgroundColor: palette.surface, elevation: 2, shadowColor: palette.shadow, shadowOpacity: 0.12, shadowRadius: 12, shadowOffset: { width: 0, height: 8 }, marginBottom: 16 },
@@ -271,9 +362,14 @@ const styles = StyleSheet.create({
   relayInfo: { flexDirection: 'row', alignItems: 'center', gap: 12, flex: 1 },
   relayTextContainer: { flex: 1 },
   relayLabel: { color: palette.text, fontSize: 14, fontWeight: '600' },
+  renameHint: { color: palette.muted, fontSize: 10, marginTop: 2 },
   renameInput: { height: 36, backgroundColor: 'transparent' },
   renameInputContent: { fontSize: 14, fontWeight: '600', color: palette.primary },
-  relayActions: { minWidth: 80, alignItems: 'flex-end' },
+  relayActions: { minWidth: 110, alignItems: 'flex-end' },
+  toggleRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  toggleState: { fontSize: 12, fontWeight: '800', minWidth: 28, textAlign: 'right' },
+  toggleOn: { color: palette.primary },
+  toggleOff: { color: palette.muted },
   renameActions: { flexDirection: 'row', alignItems: 'center' },
   sensorGrid: { flexDirection: 'row', justifyContent: 'space-around', marginBottom: 8 },
   sensorItem: { alignItems: 'center', gap: 4 },

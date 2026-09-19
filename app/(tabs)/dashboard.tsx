@@ -3,12 +3,12 @@ import { RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 import { Card, Text } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { useEsp32 } from '../../hooks/useEsp32';
+import { useDevice } from '../../hooks/useDevice';
 import { getDailySummaries, getRecentRelayEvents, DailySummary, RelayEvent } from '../../services/firebase';
 import { palette } from '../../constants/colors';
 
 export default function DashboardScreen() {
-  const { isConnected, voltage, current, power, relays, threshold, uptime } = useEsp32({ pollIntervalMs: 2000 });
+  const { isConnected, voltage, current, power, relays, threshold, uptime } = useDevice({ pollIntervalMs: 4000 });
   const [dailyData, setDailyData] = useState<DailySummary | null>(null);
   const [recentEvents, setRecentEvents] = useState<RelayEvent[]>([]);
   const [refreshing, setRefreshing] = useState(false);
@@ -46,7 +46,7 @@ export default function DashboardScreen() {
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[palette.primary]} tintColor={palette.primary} />}
       >
-        <Animated.View entering={FadeInUp.duration(400)}><Card style={[styles.connCard, isConnected ? styles.connOk : styles.connBad]}><View style={styles.connRow}><MaterialCommunityIcons name={isConnected ? 'wifi' : 'wifi-off'} size={20} color="#FFF" /><View style={styles.connTxt}><Text style={styles.connTitle}>{isConnected ? 'ESP32 Connected' : 'ESP32 Disconnected'}</Text><Text style={styles.connSub}>{isConnected ? `Uptime: ${fmtUptime(uptime)} | Session: ${fmtUptime(connectionTime)}` : 'Connect to "SmartEnergyMeter" WiFi'}</Text></View><View style={[styles.connDot, isConnected ? styles.dotOk : styles.dotBad]} /></View></Card></Animated.View>
+        <Animated.View entering={FadeInUp.duration(400)}><Card style={[styles.connCard, isConnected ? styles.connOk : styles.connBad]}><View style={styles.connRow}><MaterialCommunityIcons name={isConnected ? 'wifi' : 'wifi-off'} size={20} color="#FFF" /><View style={styles.connTxt}><Text style={styles.connTitle}>{isConnected ? 'Device Connected' : 'Device Disconnected'}</Text><Text style={styles.connSub}>{isConnected ? `Uptime: ${fmtUptime(uptime)} | Session: ${fmtUptime(connectionTime)}` : 'Check the bridge connection'}</Text></View><View style={[styles.connDot, isConnected ? styles.dotOk : styles.dotBad]} /></View></Card></Animated.View>
         <Animated.View entering={FadeInUp.delay(100).duration(500)}><View style={styles.row}><Card style={styles.metric}><View style={[styles.ico, { backgroundColor: '#E8F5E9' }]}><MaterialCommunityIcons name="flash" size={20} color={palette.primary} /></View><Text style={styles.mLbl}>Voltage</Text><Text style={styles.mVal}>{voltage.toFixed(1)}</Text><Text style={styles.mUnit}>V</Text></Card><Card style={styles.metric}><View style={[styles.ico, { backgroundColor: '#E3F2FD' }]}><MaterialCommunityIcons name="current-ac" size={20} color={palette.secondary} /></View><Text style={styles.mLbl}>Current</Text><Text style={styles.mVal}>{current.toFixed(3)}</Text><Text style={styles.mUnit}>A</Text></Card></View></Animated.View>
         <Animated.View entering={FadeInUp.delay(200).duration(500)}><View style={styles.row}><Card style={styles.metric}><View style={[styles.ico, { backgroundColor: '#FFF8E1' }]}><MaterialCommunityIcons name="lightning-bolt" size={20} color="#F59E0B" /></View><Text style={styles.mLbl}>Power</Text><Text style={styles.mVal}>{power.toFixed(1)}</Text><Text style={styles.mUnit}>W</Text></Card><Card style={styles.metric}><View style={[styles.ico, { backgroundColor: '#F3E5F5' }]}><MaterialCommunityIcons name="power-plug" size={20} color="#9C27B0" /></View><Text style={styles.mLbl}>Active</Text><Text style={styles.mVal}>{activeRelays}/3</Text><Text style={styles.mUnit}>relays</Text></Card></View></Animated.View>
         <Animated.View entering={FadeInUp.delay(300).duration(500)}><Card style={styles.gauge}><Text style={styles.h2}>Power vs Threshold</Text><View style={styles.gaugeRow}><View style={styles.gaugeBar}><View style={[styles.gaugeFill, { width: `${powerPercent}%`, backgroundColor: powerPercent > 80 ? '#D32F2F' : palette.primary }]} /></View><Text style={styles.gaugePct}>{powerPercent.toFixed(0)}%</Text></View><Text style={styles.gaugeLabel}>{power.toFixed(1)}W of {threshold.toFixed(1)}W limit</Text></Card></Animated.View>
